@@ -19,11 +19,15 @@
    based on context, we have YACC do the correct memmory look up or the storage depending
    on position
 
-   Shaun Cooper
-    January 2015
+   Modified by Michael Smith
+   February 2020
 
-   problems  fix unary minus, fix parenthesis, add multiplication
-   problems  make it so that verbose is on and off with an input argument instead of compiled in
+   Changes:
+   -added grammar for expr '*' expr which allows multiplication to work
+   -changed associativity for UMINUS to %nonassoc to allow the grammar
+    '-' expr to work by allowing it to be the only legal grammar for
+    negative numbers and any others whould be grammar for minus if not 
+    blatant syntax errors
 */
 
 
@@ -45,17 +49,18 @@ void yyerror (s)  /* Called by yyparse on error */
 %}
 /*  defines the start symbol, what values come back from LEX and how the operators are associated  */
 
+
 %start list
 
 %token INTEGER
-%token  VARIABLE
+%token VARIABLE
 
 %left '|'
 %left '&'
 %left '+' '-'
 %left '*' '/' '%'
-%left UMINUS
 
+%nonassoc UMINUS
 
 %%	/* end specs, begin rules */
 
@@ -66,7 +71,7 @@ list	:	/* empty */
 	;
 
 stat	:	expr
-			{ fprintf(stderr,"the anwser is%d\n", $1); }
+			{ fprintf(stderr,"the anwser is %d\n", $1); }
 	|	VARIABLE '=' expr
 			{ regs[$1] = $3; }
 	;
@@ -76,7 +81,9 @@ expr	:	'(' expr ')'
 	|	expr '-' expr
 			{ $$ = $1 - $3; }
 	|	expr '+' expr
-			{ $$ = $1 + $3; }
+			{ $$ = $1 + $3; } 
+	|	expr '*' expr
+			{ $$ = $1 * $3; }
 	|	expr '/' expr
 			{ $$ = $1 / $3; }
 	|	expr '%' expr
@@ -85,7 +92,7 @@ expr	:	'(' expr ')'
 			{ $$ = $1 & $3; }
 	|	expr '|' expr
 			{ $$ = $1 | $3; }
-	|	expr '-' expr	%prec UMINUS
+	|	'-' expr	%prec UMINUS
 			{ $$ = -$2; }
 	|	VARIABLE
 			{ $$ = regs[$1]; fprintf(stderr,"found a variable value =%d\n",$1); }
@@ -96,6 +103,8 @@ expr	:	'(' expr ')'
 
 %%	/* end of rules, start of program */
 
-main()
-{ yyparse();
+int main(void) { 
+	
+	yyparse();
+	return 1;
 }
