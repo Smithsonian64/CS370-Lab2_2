@@ -22,6 +22,13 @@
    Modified by Michael Smith
    February 2020
 
+   This yacc routine uses return values provided by lex to produce values
+   based on the defined grammar and return types.
+
+   It will produce values just like a normal calculator based on character
+   inputs from the user. It will throw syntax errors for obvious things
+   like non mathmetical characters.
+
    Changes:
    -added grammar for expr '*' expr which allows multiplication to work
    -changed associativity for UMINUS to %nonassoc to allow the grammar
